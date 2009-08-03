@@ -1,11 +1,11 @@
 ---
-abstract: 'Padre Standalone for Win32 (EXPERIMENTAL)'
+abstract: 'Padre Standalone for Win32 builder'
 author:
-  - 'Curtis Jewell <csjewell@cpan.org>'
+  - 'Curtis Jewell <csjewell@cpan.org> and Adam Kennedy <adamk@cpan.org>'
 build_requires:
   ExtUtils::MakeMaker: 6.42
   LWP::Online: 1.07
-  Test::More: 0.42
+  Test::More: 0.61
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
@@ -19,16 +19,18 @@ name: Perl-Dist-Padre
 no_index:
   directory:
     - inc
+    - share
     - t
 requires:
   Perl::Dist::Strawberry: 1.1114
-  Perl::Dist::WiX: 0.192
+  Perl::Dist::WiX: 1.000
+  URI::file: 4.20
   perl: 5.8.1
 resources:
   IRC: irc://irc.perl.org/#padre
-  Web2IRC: http://widget.mibbit.com/?server=irc.perl.org&channel=%23padre
+  WebIRC: http://widget.mibbit.com/?server=irc.perl.org&channel=%23padre
   bugtracker: http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Perl-Dist-Padre
   homepage: http://padre.perlide.org/
   license: http://dev.perl.org/licenses/
   repository: https://svn.perlide.org/padre/trunk/Perl-Dist-Padre
-version: 0.260010
+version: 0.270
