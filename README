@@ -1,4 +1,4 @@
-Perl::Dist::Padre version 0.270
+Perl::Dist::Padre version 0.500
 
 DESCRIPTION
     This is the distribution builder used to create Padre Standalone for
@@ -15,7 +15,7 @@ INSTALLATION
 DEPENDENCIES
     Dependencies of this module that are non-core in perl 5.8.1 (which is
     the minimum version of Perl required) include Perl::Dist::Strawberry
-    version 1.11_14, and URI::file.
+    version 2.01, and URI::file.
 
 COPYRIGHT AND LICENSE
     Copyright (c) 2009 Adam Kennedy and Curtis Jewell.
