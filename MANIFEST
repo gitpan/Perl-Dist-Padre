@@ -1,17 +1,9 @@
+Build.bat
+Build.PL
 BUILDING.txt
 Changes
-inc/Module/Install.pm
-inc/Module/Install/Base.pm
-inc/Module/Install/Can.pm
-inc/Module/Install/Fetch.pm
-inc/Module/Install/Makefile.pm
-inc/Module/Install/Metadata.pm
-inc/Module/Install/Share.pm
-inc/Module/Install/Win32.pm
-inc/Module/Install/With.pm
-inc/Module/Install/WriteAll.pm
-lib/Perl/Dist/AlmostSix.pm
 lib/Perl/Dist/Padre.pm
+LICENSE
 Makefile.PL
 MANIFEST			This list of files
 META.yml
@@ -22,6 +14,7 @@ share/minicpan_filters.txt
 share/padre.ico
 share/PadreBanner.bmp
 share/PadreDialog.bmp
+site_html_config.yaml
 t/01_compile.t
 t/80_pod.t
 t/81_perlcritic.t
@@ -34,4 +27,3 @@ t/lib/Test.pm
 t/lib/Test2.pm
 t/settings/perlcritic.txt
 t/settings/perltidy.txt
-version-rc.patch.txt

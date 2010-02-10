@@ -4,17 +4,17 @@ package Perl::Dist::Padre;
 use 5.008001;
 use strict;
 use warnings;
-use Perl::Dist::Strawberry   2.01  qw();
-use URI::file                      qw();
-use English                        qw( -no_match_vars );
-use File::Spec::Functions          qw( catfile catdir );
-use parent                         qw( Perl::Dist::Strawberry );
-
-# http://www.dagolden.com/index.php/369/version-numbers-should-be-boring/
-our $VERSION = '0.500';
-$VERSION =~ s/_//ms;
+use Perl::Dist::WiX          1.102002;
+use Perl::Dist::Strawberry   2.02     qw();
+use URI::file                         qw();
+use English                           qw( -no_match_vars );
+use File::Spec::Functions             qw( catfile catdir );
+use parent                            qw( Perl::Dist::Strawberry );
 #>>>
 
+# http://www.dagolden.com/index.php/369/version-numbers-should-be-boring/
+our $VERSION = '0.560';
+$VERSION =~ s/_//ms;
 
 
 
@@ -24,11 +24,11 @@ $VERSION =~ s/_//ms;
 sub new {
 	my $dist_dir = File::ShareDir::dist_dir('Perl-Dist-Padre');
 
-
 	return shift->SUPER::new(
+		# Define the distribution information and where it goes.
 		app_id            => 'padre',
-		app_name          => 'Padre Standalone',
-		app_ver_name      => 'Padre Standalone 0.50',
+		app_name          => 'Strawberry Perl plus Padre',
+		app_ver_name      => 'Strawberry Perl 5.10.1.1 plus Padre 0.56',
 		app_publisher     => 'Padre',
 		app_publisher_url => 'http://padre.perlide.org/',
 		image_dir         => 'C:\strawberry',
@@ -36,6 +36,7 @@ sub new {
 		# Set e-mail to something Padre-specific.
 		perl_config_cf_email => 'padre-dev@perlide.org',
 
+		# The MSI stuff.
 		msi_product_icon => catfile( $dist_dir, 'padre.ico' ),
 		msi_help_url     => undef,
 		msi_banner_top   => catfile( $dist_dir, 'PadreBanner.bmp' ),
@@ -50,24 +51,19 @@ sub new {
 		# Trace level.
 		trace => 1,
 
-		# Build both exe and zip versions
+		# Build both exe and zip versions.
 		msi => 1,
 		zip => 1,
 
-		# Tasks to complete to create Strawberry
+		# These are the locations to pull down the msm.
+		msm_to_use => 'http://strawberryperl.com/download/strawberry-msm/strawberry-perl-5.10.1.1.msm',
+		msm_zip    => 'http://strawberryperl.com/download/strawberry-perl-5.10.1.1.zip',
+		msm_code   => 'BC4B680E-4871-31E7-9883-3E2C74EA4F3C',
+
+		# Tasks to complete to create Strawberry + Padre.
 		tasklist => [
 			'final_initialization',
-			'install_c_toolchain',
-			'install_strawberry_c_toolchain',
-			'install_c_libraries',
-			'install_strawberry_c_libraries',
-			'install_perl',
-			'install_perl_toolchain',
-			'install_cpan_upgrades',
-			'install_strawberry_modules_1',
-			'install_strawberry_modules_2',
-			'install_strawberry_modules_3',
-			'install_strawberry_modules_4',
+			'initialize_using_msm',
 			'install_padre_prereq_modules_1',
 			'install_padre_prereq_modules_2',
 			'install_padre_modules',
@@ -75,19 +71,24 @@ sub new {
 			'install_strawberry_extras',
 			'install_padre_extras',
 			'remove_waste',
-			'add_forgotten_files',
 			'regenerate_fragments',
 			'write',
 		],
 
+		# Other parameters passed in override the ones 
+		# here and in Strawberrry. 
 		@_,
 	);
 
 } ## end sub new
 
+
+
 sub output_base_filename {
-	return 'padre-standalone-0.50';
+	return 'strawberry-plus-padre-0.56';
 }
+
+
 
 #####################################################################
 # Customisations for Perl assets
@@ -98,17 +99,23 @@ sub install_perl_588 {
 	return;
 }
 
+
+
 sub install_perl_589 {
 	my $self = shift;
 	PDWiX->throw('Perl 5.8.9 is not available in Padre Standalone');
 	return;
 }
 
+
+
 sub install_perl_5100 {
 	my $self = shift;
 	PDWiX->throw('Perl 5.10.0 is not available in Padre Standalone');
 	return;
 }
+
+
 
 sub install_padre_prereq_modules_1 {
 	my $self = shift;
@@ -139,11 +146,14 @@ sub install_padre_prereq_modules_1 {
 } ## end sub install_padre_prereq_modules_1
 
 
+
 sub install_padre_prereq_modules_2 {
 	my $self = shift;
 
 	# Manually install our non-Wx dependencies first to isolate
 	# them from the Wx problems
+	# NOTE: ORLite::Migrate goes after ORLite once they don't clone it privately.
+	# NOTE: Test::Exception goes before Test::Most when it's not in Strawberry.
 	$self->install_modules( qw{
 		  Test::SubCalls
 		  List::MoreUtils
@@ -156,7 +166,6 @@ sub install_padre_prereq_modules_2 {
 		  Test::Pod
 		  Module::Starter
 		  ORLite
-		  ORLite::Migrate
 		  Test::Differences
 		  File::Slurp
 		  Pod::POM
@@ -166,9 +175,7 @@ sub install_padre_prereq_modules_2 {
 		  Devel::StackTrace
 		  Class::Data::Inheritable
 		  Exception::Class
-		  Test::Exception
 		  Test::Most
-		  Class::XSAccessor::Array
 		  Parse::ExuberantCTags
 		  CPAN::Mini
 		  Portable
@@ -181,26 +188,39 @@ sub install_padre_prereq_modules_2 {
 		  Locale::Msgfmt
 	} );
 
+	# These were new between 0.50 and 0.55
+	$self->install_modules( qw{
+		  Module::ScanDeps
+		  Module::Install
+		  Format::Human::Bytes
+		  Template::Tiny
+		  Win32::Shortcut
+		  Debug::Client
+	} );
+	
+	# These were new between 0.55 and svn trunk, AFAICT.
+	$self->install_modules( qw{
+		  Devel::Refactor
+	} );
+	
 	return 1;
 } ## end sub install_padre_prereq_modules_2
+
+
 
 sub install_padre_modules {
 	my $self = shift;
 
 	# The rest of the modules are order-specific,
-	# for reasons maybe involving CPAN.pm but not fully understodd.
+	# for reasons maybe involving CPAN.pm but not fully understood.
 
-	# Install the Alien module
-	if ( defined $ENV{PERL_DIST_PADRE_ALIENWXWIDGETS_PAR_LOCATION} ) {
-		my $filelist = $self->install_par(
-			name => 'Alien_wxWidgets',
-			url  => URI::file->new(
-				$ENV{PERL_DIST_PADRE_ALIENWXWIDGETS_PAR_LOCATION}
-			  )->as_string(),
-		);
-	} else {
-		$self->install_module( name => 'Alien::wxWidgets' );
-	}
+	# Install the Alien::wxWidgets module from a precompiled .par
+	my $par_url = 
+		'http://www.strawberryperl.com/download/padre/Alien-wxWidgets-0.50-MSWin32-x86-multi-thread-5.10.1.par';
+	my $filelist = $self->install_par(
+		name => 'Alien_wxWidgets',
+		url  => $par_url,
+	);
 
 	# Install the Wx module over the top of alien module
 	$self->install_module( name => 'Wx' );
@@ -230,18 +250,18 @@ sub install_padre_extras {
 	}
 
 	# Get the Id for directory object that stores the filename passed in.
-	my $dir_id = $self->directories()->search_dir(
+	my $dir_id = $self->get_directory_tree()->search_dir(
 		path_to_find => catdir( $self->image_dir(), 'perl', 'bin' ),
 		exact        => 1,
 		descend      => 1,
 	)->get_id();
 
 	my $icon_id =
-	  $self->icons()
+	  $self->_icons()
 	  ->add_icon( catfile( $self->dist_dir(), 'padre.ico' ), 'padre.exe' );
 
 	# Add the start menu icon.
-	$self->{fragments}->{StartMenuIcons}->add_shortcut(
+	$self->get_fragment_object('StartMenuIcons')->add_shortcut(
 		name => 'Padre',
 		description =>
 'Perl Application Development and Refactoring Environment - a Perl IDE',
@@ -253,6 +273,8 @@ sub install_padre_extras {
 
 	return 1;
 } ## end sub install_padre_extras
+
+
 
 sub dist_dir {
 	my $self = shift;
@@ -272,8 +294,6 @@ sub dist_dir {
 	return $dir;
 } ## end sub dist_dir
 
-
-
 1;                                     # Magic true value required at end of module
 
 __END__
@@ -282,7 +302,7 @@ __END__
 
 =begin readme text
 
-Perl::Dist::Padre version 0.500
+Perl::Dist::Padre version 0.560
 
 =end readme
 
@@ -290,7 +310,7 @@ Perl::Dist::Padre version 0.500
 
 =head1 NAME
 
-Perl::Dist::Padre - Padre Standalone for Win32 builder
+Perl::Dist::Padre - Strawberry + Padre for Win32 builder
 
 =head1 VERSION
 
@@ -300,7 +320,7 @@ This document describes Perl::Dist::Padre version 0.450.
 
 =head1 DESCRIPTION
 
-This is the distribution builder used to create Padre Standalone for Win32.
+This is the distribution builder used to create Strawberry + Padre Standalone for Win32.
 
 =begin readme
 
@@ -319,14 +339,14 @@ To install this module, run the following commands:
 
 =head1 SYNOPSIS
 
-	# This module is only used to build Padre Standalone. 
+	# This module is only used to build Strawberry + Padre. 
 	# See below if you want to try it yourself.
 
 =head2 Building Padre Standalone
 
-Unlike Strawberry, Padre Standalone does not have a standalone build script.
+Unlike Strawberry, Strawberry + Padre does not have a standalone build script.
 
-To build Padre Standalone, run the following.
+To build Strawberry + Padre, run the following.
 
 	perldist_w Padre
 
@@ -363,8 +383,8 @@ Perl::Dist::Padre requires no configuration files or environment variables.
 
 Dependencies of this module that are non-core in perl 5.8.1 (which is the 
 minimum version of Perl required) include 
-L<Perl::Dist::Strawberry|Perl::Dist::Strawberry> version 2.01, and 
-L<URI::file|URI::file>.
+L<Perl::Dist::Strawberry|Perl::Dist::Strawberry> version 2.02, 
+L<URI::file|URI::file>, and L<parent|parent>.
 
 =for readme stop
 
@@ -399,7 +419,7 @@ L<http://csjewell.comyr.com/perl/>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2009 Adam Kennedy and Curtis Jewell.
+Copyright 2009 - 2010 Adam Kennedy and Curtis Jewell.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself, either version
