@@ -8,7 +8,7 @@ build_requires:
   Test::Perl::Dist: 0.202
 configure_requires:
   Module::Build: 0.36
-generated_by: 'Module::Build version 0.3603'
+generated_by: 'Module::Build version 0.3607'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -17,7 +17,7 @@ name: Perl-Dist-Padre
 provides:
   Perl::Dist::Padre:
     file: lib/Perl/Dist/Padre.pm
-    version: 0.560
+    version: 0.630
 requires:
   File::ShareDir: 1.00
   Perl::Dist::Strawberry: 2.02
@@ -32,4 +32,4 @@ resources:
   homepage: http://padre.perlide.org/
   license: http://dev.perl.org/licenses/
   repository: https://svn.perlide.org/padre/trunk/Perl-Dist-Padre
-version: 0.560
+version: 0.630

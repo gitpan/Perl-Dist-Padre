@@ -14,7 +14,6 @@ share/minicpan_filters.txt
 share/padre.ico
 share/PadreBanner.bmp
 share/PadreDialog.bmp
-site_html_config.yaml
 t/01_compile.t
 t/80_pod.t
 t/81_perlcritic.t
